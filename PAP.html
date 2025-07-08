@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braço Robótico - Prova de Aptidão Profissional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/OBJLoader.js"></script>
+    <style>
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted #666;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 30px;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #3b82f6;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 8px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #model-container {
+            width: 100%;
+            height: 400px;
+            background-color: #f0f0f0;
+        }
+        .dark #model-container {
+            background-color: #1a202c;
+        }
+        .before-after {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+        .before-after img {
+            width: 100%;
+            display: block;
+        }
+        .before-after .comparison {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .comparison-slider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: white;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: ew-resize;
+        }
+        .comparison-slider:after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        /* Ajusta o tamanho da imagem do fluxo de funcionamento */
+        @media (min-width: 768px) {
+            img[alt="Diagrama de fluxo do sistema"] {
+                max-width: 2000px;
+                width: 100%;
+        }
+        }
+        img[alt="Diagrama de fluxo do sistema"] {
+            width: 100%;
+            max-width: 100%;
+            min-height: 300px;
+            min-width: 0;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            transition: box-shadow 0.3s;
+        }
+        img[alt="Diagrama de fluxo do sistema"]:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+        #image-modal img#modal-image {
+            max-width: 98vw;
+            max-height: 98vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+            border-radius: 1rem;
+            background: #222;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <!-- Header with Dark Mode Toggle -->
+    <header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-robot text-blue-500 text-2xl"></i>
+                <span class="font-bold text-lg">Braço Robótico</span>
+ </svg>           </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#about" class="hover:text-blue-500 transition">Sobre</a>
+                <a href="#tech" class="hover:text-blue-500 transition">Tecnologias</a>
+                <a href="#process" class="hover:text-blue-500 transition">Processo</a>
+                <a href="#results" class="hover:text-blue-500 transition">Resultados</a>
+                <a href="#code" class="hover:text-blue-500 transition">Código</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:block"></i>
+                </button>
+                <button class="md:hidden" id="mobile-menu-button">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-gray-800 shadow-lg">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#about" class="py-2 hover:text-blue-500 transition">Sobre</a>
+                <a href="#tech" class="py-2 hover:text-blue-500 transition">Tecnologias</a>
+                <a href="#process" class="py-2 hover:text-blue-500 transition">Processo</a>
+                <a href="#results" class="py-2 hover:text-blue-500 transition">Resultados</a>
+                <a href="#code" class="py-2 hover:text-blue-500 transition">Código</a>
+            </div>
+        </div>  
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden">
+        <div class="absolute inset-0 opacity-20 dark:opacity-10">
+            <div class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDA3NWZmIiBzdHJva2Utd2lkdGg9IjEiLz48L3N2Zz4=')]"></div>
+        </div>
+        <div class="container mx-auto px-4 text-center z-10">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Braço Robótico</h1>
+            <h2 class="text-xl md:text-2xl mb-8 text-gray-600 dark:text-gray-300">Sistema de captura e replicação de movimentos humanos em tempo real</h2>
+            
+            <!-- 3D Model Placeholder -->
+            <div class="flex flex-col md:flex-row items-start justify-center gap-8 mb-8 mt-8">
+                <div id="model-container" class="rounded-xl shadow-xl overflow-hidden w-full md:w-1/2 h-96"></div>
+                <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg w-full md:w-1/2">
+                    <h4 class="font-semibold mb-2">Apresentação do projeto </h4>
+                    <p style="text-align: justify;">
+                        O projeto consiste no movimento dos dedos de uma mão do braço robótico
+                        utilizando o servo motores, Arduino e o Leap Motion. O projeto tem como
+                        objetivo a replicação de movimentos executados pelo utilizador. Para a
+                        captura dos movimentos utiliza-se o Leap Motion que é um dispositivo que
+                        capta o movimento das mãos do utilizador. Utilizando um software específico,
+                        pode-se visualizar e retirar os dados necessários para o movimento no braço.
+                    </p>
+                </div>
+            </div>
+            <div class="mb-8">
+                <p class="text-lg">Prova de Aptidão Profissional</p>
+                <p class="text-gray-600 dark:text-gray-300">Autores: Lounie Costa 7907 e Mário Moniz 7921</p>
+            </div>
+            <a href="#about" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 shadow-lg">
+                Explorar Projeto <i class="fas fa-arrow-down ml-2"></i>
+            </a>
+        </div>
+        <div class="absolute bottom-10 left-0 right-0 text-center">
+            <a href="#about" class="animate-bounce inline-block">
+                <i class="fas fa-chevron-down text-2xl text-gray-600 dark:text-gray-300"></i>
+            </a>
+        </div>
+    </section>
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-white dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Sobre o Projeto</h2>
+            <div class="grid md:grid-cols-2 gap-12 items-start">
+                <!-- Objetivo -->
+                <div class="flex flex-col items-center justify-start w-full h-full mt-0">
+                    <h3 class="text-2xl font-bold mb-4 text-center">Objetivo</h3>
+                    <p class="text-lg text-justify max-w-2xl leading-relaxed">
+                        O principal objetivo deste projeto é proporcionar uma solução inovadora que possa ser aplicada em ambientes educacionais, servindo como ferramenta de apoio ao ensino. Inspirado em práticas de fisioterapia das mãos, o sistema permite a replicação de movimentos humanos em um braço robótico, facilitando a aprendizagem prática e a demonstração de conceitos relacionados à robótica e reabilitação motora.<br><br>
+                        Ao integrar tecnologias como Arduino, servomotores e Leap Motion, o projeto busca simplificar tarefas e tornar o ambiente profissional e educacional mais eficiente, promovendo o desenvolvimento de competências técnicas e a inclusão de recursos tecnológicos no processo de ensino-aprendizagem.
+                    </p>
+                </div>
+                <!-- Público-Alvo -->
+                <div class="flex flex-col items-center justify-start w-full h-full mt-0">
+                    <h3 class="text-2xl font-bold mb-4 text-center">Público-Alvo</h3>
+                    <p class="text-lg text-justify max-w-2xl leading-relaxed">
+                        O projeto foi desenvolvido para atender principalmente alunos e professores do ensino básico, secundário/profissional e técnico, com foco especial na educação inclusiva. Destina-se a beneficiar estudantes com limitações motoras nas mãos, oferecendo uma ferramenta adaptada que auxilia no processo de aprendizagem prática.<br><br><br>
+                        Além disso, professores podem utilizar o sistema como recurso didático complementar, promovendo a participação ativa de todos os alunos e integrando práticas de ensino inclusivo. O projeto contribui para a criação de ambientes educacionais mais acessíveis, inovadores e adaptados às necessidades específicas dos utilizadores.
+                    </p>
+                </div>
+            </div>
+        </div>
+    <div class="col-span-2 bg-gray-50 dark:bg-gray-700 p-16 md:p-32 rounded-3xl shadow-2xl flex flex-col md:flex-row items-center w-full max-w-7xl mx-auto mt-24">
+        <div class="w-full md:w-3/5 flex justify-center mb-8 md:mb-0 md:mr-16">
+            <img src="Imagem/Captura de ecrã 2025-05-19 090132.png" alt="Diagrama de fluxo do sistema" class="rounded-2xl shadow-2xl w-full max-w-none" style="height:auto; max-height:2000px; min-width:700px; cursor:pointer;" onclick="openImageModal(this.src);">
+        </div>
+        <div class="w-full md:w-2/5 flex flex-col justify-center">
+            <h3 class="text-4xl font-bold mb-8 text-center">Diagrama de Funcionamento</h3>
+            <p class="text-xl text-gray-700 dark:text-gray-200 text-justify">
+                Na Figura observa-se o funcionamento do circuito. O projeto inicia-se com o
+                utilizador que executa movimento com as mãos que são captados pelo sensor.
+                Posteriormente envia os dados para o computador que os processa e envia para o
+                Arduino, que controla o servo motor responsável pelo movimento dos dedos do
+                braço. 
+            </p>
+        </div>
+        <style>
+            /* Ajusta o tamanho da imagem do fluxo de funcionamento */
+            @media (min-width: 768px) {
+                img[alt="Diagrama de fluxo do sistema"] {
+                    max-width: 2000px;
+                    width: 100%;
+                }
+            }
+            img[alt="Diagrama de fluxo do sistema"] {
+                width: 100%;
+                max-width: 100%;
+                min-height: 300px;
+                min-width: 0;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+                transition: box-shadow 0.3s;
+            }
+            img[alt="Diagrama de fluxo do sistema"]:hover {
+                box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            }
+        </style>
+    </div>
+    </section>
+
+    <!-- Technologies Section -->
+    <section id="tech" class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Tecnologias Utilizadas</h2>
+            
+            <div class="flex justify-center mb-8">
+                <div class="inline-flex rounded-md shadow-sm">
+                    <button data-tab="hardware" class="tab-btn px-6 py-3 rounded-l-lg font-medium bg-blue-500 text-white">Hardware</button>
+                    <button data-tab="software" class="tab-btn px-6 py-3 font-medium bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">Software</button>
+                    <button data-tab="structure" class="tab-btn px-6 py-3 rounded-r-lg font-medium bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">Estrutura 3D</button>
+                </div>
+            </div>
+            
+            <!-- Hardware Tab -->
+            <div id="hardware" class="tab-content active">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Arduino Card -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-microchip text-blue-500 text-3xl mr-4"></i>
+                                <h3 class="text-xl font-bold">Arduino Uno</h3>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">Placa controladora principal do sistema, responsável por gerir os servomotores</p>
+                            <div class="text-sm text-gray-500">
+                                <p><span class="font-semibold">Microcontrolador:</span> ATmega328P</p>
+                                <p><span class="font-semibold">Portas Digitais:</span> 14</p>
+                                <p><span class="font-semibold">Memória Flash:</span> 256KB</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Servo Motors Card -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-cogs text-green-500 text-3xl mr-4"></i>
+                                <h3 class="text-xl font-bold">Servo Motores MG996R</h3>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">Motores responsáveis pelo movimento das articulações do braço robótico.</p>
+                            <div class="text-sm text-gray-500">
+                                <p><span class="font-semibold">Torque:</span> 10kg/cm</p>
+                                <p><span class="font-semibold">Velocidade:</span> 0.17s/60°</p>
+                                <p><span class="font-semibold">Tensão:</span> 4.8-7.2V</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Leap Motion Card -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-hand-paper text-purple-500 text-3xl mr-4"></i>
+                                <h3 class="text-xl font-bold">Leap Motion</h3>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">Dispositivo de captura de movimentos das mãos em tempo real.</p>
+                            <div class="text-sm text-gray-500">
+                                <p><span class="font-semibold">Campo de Visão:</span> 150°</p>
+                                <p><span class="font-semibold">Taxa de Atualização:</span> 120fps</p>
+                                <p><span class="font-semibold">Precisão:</span> 0.01mm</p>
+                        </div>
+                    </div>
+                </div>
+                
+                        <div class="mt-12 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden w-full col-span-3">
+                            <div class="p-6">
+                                <h3 class="text-2xl font-bold mb-4 text-center">Tabela de Especificações Técnicas</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                                        <thead class="bg-gray-100 dark:bg-gray-700">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Componente</th>
+                                                <th class="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Especificação</th>
+                                                <th class="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            <tr class="hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
+                                                <td class="px-6 py-4 font-medium">Arduino Uno</td>
+                                                <td class="px-6 py-4">Clock Speed</td>
+                                                <td class="px-6 py-4">16 MHz</td>
+                                            </tr>
+                                            <tr class="hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
+                                                <td class="px-6 py-4 font-medium">Arduino Uno</td>
+                                                <td class="px-6 py-4">Tensão de Operação</td>
+                                                <td class="px-6 py-4">5V</td>
+                                            </tr>
+                                            <tr class="hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
+                                                <td class="px-6 py-4 font-medium">Servo MG996R</td>
+                                                <td class="px-6 py-4">
+                                                    <span class="tooltip">PWM
+                                                        <span class="tooltiptext">Modulação por Largura de Pulso - técnica para controlar servomotores</span>
+                                                    </span> Range
+                                                </td>
+                                                <td class="px-6 py-4">500–2500μs</td>
+                                            </tr>
+                                            <tr class="hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
+                                                <td class="px-6 py-4 font-medium">Servo MG996R</td>
+                                                <td class="px-6 py-4">Torque Máximo</td>
+                                                <td class="px-6 py-4">10 kg/cm</td>
+                                            </tr>
+                                            <tr class="hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
+                                                <td class="px-6 py-4 font-medium">Leap Motion</td>
+                                                <td class="px-6 py-4">Alcance Máximo</td>
+                                                <td class="px-6 py-4">60 cm</td>
+                                            </tr>
+                                            <tr class="hover:bg-blue-50 dark:hover:bg-blue-900/30 transition">
+                                                <td class="px-6 py-4 font-medium">Leap Motion</td>
+                                                <td class="px-6 py-4">Campo de Visão</td>
+                                                <td class="px-6 py-4">150°</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-4 text-xs text-gray-500 dark:text-gray-400 text-center">
+                                    <span class="inline-flex items-center gap-1">
+                                        <span class="tooltip underline decoration-dotted cursor-help">PWM
+                                            <span class="tooltiptext">Modulação por Largura de Pulso</span>
+                                        </span> = Pulse Width Modulation
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Software Tab -->
+            <div id="software" class="tab-content">
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col items-center">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Arduino_Logo.svg/2560px-Arduino_Logo.svg.png" alt="Arduino IDE" class="h-16 mb-4">
+                        <h3 class="text-xl font-bold mb-2">Arduino IDE</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-center">Ambiente de desenvolvimento para programação da placa Arduino.</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col items-center">
+                        <img src="Imagem/transferir.webp" alt="Processing" class="h-16 mb-4">
+                        <h3 class="text-xl font-bold mb-2">Processing</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-center">Software para desenvolvimento da interface com o Leap Motion.</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col items-center">
+                        <img src="https://www.tinkercad.com/favicon.ico" alt="Tinkercad" class="h-16 mb-4">
+                        <h3 class="text-xl font-bold mb-2">Tinkercad</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-center">Plataforma para simulação inicial do circuito eletrônico.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-4">Versões de Software</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Software</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Versão</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Função</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">Arduino IDE</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">1.8.19</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Programação do microcontrolador</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">Processing</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">4.2</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Interface com Leap Motion</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">Leap Motion SDK</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">4.0.0</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">Captura de movimentos</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3D Structure Tab -->
+            <div id="structure" class="tab-content">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-4">Montagem 3D</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <img src="Imagem/Captura de ecrã 2025-05-25 182144.png" alt="Montagem etapa 1" class="rounded-lg cursor-pointer hover:opacity-75 transition object-cover w-full h-40" onclick="openImageModal(this.src)">
+                            <img src="Imagem/Captura de ecrã 2025-05-25 182321.png" alt="Montagem etapa 2" class="rounded-lg cursor-pointer hover:opacity-75 transition object-cover w-full h-40" onclick="openImageModal(this.src)">
+                            <img src="Imagem/Captura de ecrã 2025-05-25 182408.png" alt="Montagem etapa 3" class="rounded-lg cursor-pointer hover:opacity-75 transition object-cover w-full h-40" onclick="openImageModal(this.src)">
+                            <img src="Imagem/Captura de ecrã 2025-05-25 182502.png" alt="Montagem etapa 4" class="rounded-lg cursor-pointer hover:opacity-75 transition object-cover w-full h-40" onclick="openImageModal(this.src)">
+                            <img src="Imagem/Captura de ecrã 2025-05-25 182527.png" alt="Montagem etapa 5" class="rounded-lg cursor-pointer hover:opacity-75 transition object-cover w-full h-40" onclick="openImageModal(this.src)">
+                            <img src="Imagem/Captura de ecrã 2025-05-25 182612.png" alt="Montagem etapa 6" class="rounded-lg cursor-pointer hover:opacity-75 transition object-cover w-full h-40" onclick="openImageModal(this.src)">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-4">Arquivos STL</h3>
+                        <p class="mb-4">Os arquivos 3D do projeto estão disponíveis para download no Inmoov:</p>
+                        <a href="https://inmoov.fr/inmoov-stl-parts-viewer/?bodyparts=i2RightHand" class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                            <i class="fas fa-download mr-2"></i> Baixar Modelos 3D
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Development Process Section -->
+    <section id="process" class="py-20 bg-white dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Processo de Desenvolvimento</h2>
+            
+            <div class="relative">
+                <!-- Timeline -->
+                <div class="timeline-container">
+                    <!-- Phase 1 -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot">
+                            <i class="fas fa-lightbulb text-xs"></i>
+                        </div>
+                        <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold mb-2">Fase 1:  Desenvolvimento do Circuito Eletrónico</h3>
+                            <p class="mb-4" style="text-align: justify;">O projeto tem como
+                        objetivo a replicação de movimentos executados pelo utilizador. Para a
+                        captação dos movimentos utiliza-se o Leap Motion que é um dispositivo que
+                        capta o movimento das mãos do utilizador. Utilizando um software específico,
+                        pode-se visualizar e retirar os dados necessários para o movimento no braço.
+                        Os dados recolhidos ilustram a quantos graus está a inclinação dos nossos
+                        dedos. Esses dados estão associados ao respetivo nome do dedo em questão. 
+                            <button class="text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition" onclick="togglePhaseDetails('phase1')">
+                                Ver detalhes <i class="fas fa-chevron-down ml-1"></i>
+                            </button>
+                            <div id="phase1" class="hidden mt-4">
+                                <img src="Imagem/Captura de tela 2025-07-04 085037.png" alt="Binstorming inicial" class="w-1/2 mx-auto rounded mb-4">
+                                <p style="text-align: justify;">O Arduino recebe os dados
+                        do Processing, fazendo com que sejam executados pelo servo motor de acordo
+                        com os movimentos executados pelo utilizador. Esses movimentos servem para
+                        que os fios ligados entre o servo e a estrutura do braço sejam movidos de
+                        acordo com os dados recebidos pelo Processing.</p>
+                            </div>
+                        </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Phase 2 -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot">
+                            <i class="fas fa-pencil-ruler text-xs"></i>
+                        </div>
+                        <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold mb-2">Fase 2: Impressão 3D das Peças do Braço Robótico</h3>
+                            <p class="mb-4" style="text-align: justify;">
+                                Para realizar a impressão 3D começa-se por fazer o download dos STL. O site utilizado foi o Inmoov que é um site com o foco na criação de um robô. Os stl são grátis possibilitando que qualquer utilizador os possa utilizar.
+                            </p>
+                            <button class="text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition" onclick="togglePhaseDetails('phase2')">
+                                Ver detalhes <i class="fas fa-chevron-down ml-1"></i>
+                            </button>
+                            <div id="phase2" class="hidden mt-4">
+                                <img src="Imagem/Captura de tela 2025-07-04 090937.png" alt="Design no Tinkercad" class="mx-auto rounded mb-4" style="max-width: 500px; width: 100%; height: auto;">
+                                <p style="text-align: justify;">
+                                    Curiosidade: Os arquivos STL do InMoov são modelos tridimensionais usados para imprimir as peças do robô InMoov em impressoras 3D. Os arquivos fazem parte do projeto InMoov, um robô humanóide de código aberto criado por Gaël Langevin.
+                                </p>
+
+                                <p style="text-align: justify;" class="mt-4">
+                                    Para fazer a impressão das peças utilizam-se os serviços de uma empresa. São
+                                    enviados os STL do braço e após alguns dias obtém-se a impressão.
+                                </p>
+                                <div class="flex flex-col md:flex-row md:space-x-4">
+                                    <div class="w-full flex justify-center items-center gap-4">
+                                        <img src="Imagem/Captura de tela 2025-07-04 091755.png" alt="Design no Tinkercad" class="rounded mb-0" style="max-width: 350px; width: 100%; height: auto;">
+                                        <img src="Imagem/Captura de tela 2025-07-04 092225.png" alt="Design no Tinkercad" class="rounded mb-0" style="max-width: 600px; width: 100%; height: auto;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Phase 3 -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot">
+                        </div>
+                        <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold mb-2">Fase 3:  Montagem Mecânica </h3>
+                            <p class="mb-4">Nesta fase faz-se a montagem de todas as peças impressas para criar o braço
+                    robótico funcional. </p>
+                            <button class="text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition" onclick="togglePhaseDetails('phase3')">
+                                Ver detalhes <i class="fas fa-chevron-down ml-1"></i>
+                            </button>
+                            <div id="phase3" class="hidden mt-4">
+                                <div class="w-full">
+                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                        <div class="group relative overflow-hidden rounded-xl shadow-lg">
+                                            <img src="Imagem/Captura de tela 2025-07-04 093235.png" alt="Montagem 1" class="object-contain w-full h-56 bg-transparent transition-transform duration-300 group-hover:scale-105 cursor-pointer" onclick="openImageModal(this.src)">
+                                            <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                <span class="text-white font-semibold"></span>
+                                            </div>
+                                        </div>
+                                        <div class="group relative overflow-hidden rounded-xl shadow-lg">
+                                            <img src="Imagem/Captura de tela 2025-07-04 093251.png" alt="Montagem 2" class="object-contain w-full h-56 bg-transparent transition-transform duration-300 group-hover:scale-105 cursor-pointer" onclick="openImageModal(this.src)">
+                                            <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                <span class="text-white font-semibold"></span>
+                                            </div>
+                                        </div>
+                                        <div class="group relative overflow-hidden rounded-xl shadow-lg">
+                                            <img src="Imagem/Captura de tela 2025-07-04 093306.png" alt="Montagem 3" class="object-contain w-full h-56 bg-transparent transition-transform duration-300 group-hover:scale-105 cursor-pointer" onclick="openImageModal(this.src)">
+                                            <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                <span class="text-white font-semibold"></span>
+                                            </div>
+                                        </div>
+                                        <div class="group relative overflow-hidden rounded-xl shadow-lg">
+                                            <img src="Imagem/Captura de tela 2025-07-04 093318.png" alt="Montagem 4" class="object-contain w-full h-56 bg-transparent transition-transform duration-300 group-hover:scale-105 cursor-pointer" onclick="openImageModal(this.src)">
+                                            <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                <span class="text-white font-semibold"></span>
+                                            </div>
+                                        </div>
+                                        <div class="group relative overflow-hidden rounded-xl shadow-lg">
+                                            <img src="Imagem/Captura de tela 2025-07-04 093804.png" alt="Montagem 5" class="object-contain w-full h-56 bg-transparent transition-transform duration-300 group-hover:scale-105 cursor-pointer" onclick="openImageModal(this.src)">
+                                            <div class="absolute inset-0 bg-black bg-opacity-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                <span class="text-white font-semibold"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-center mt-4 gap-2">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Phase 4 -->
+                    <div class="timeline-item">
+                        <div class="timeline-dot">
+                            <i class="fas fa-print text-xs"></i>
+                        </div>
+                        <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold mb-2">Fase 4: Montagem do Circuito Eletrónico</h3>
+                            <p class="mb-4 text-justify"></p>
+                                O processo da montagem foi realizado de forma sequencial. Inicialmente,
+                                ligaram-se os servos motores ao microcontrolador, e testado o seu
+                                funcionamento. De seguida, ligou-se o Leap Motion, assim como o
+                                microcontrolador ao computador para ver se estava tudo de acordo com o
+                                circuito planeado.
+                            </p>
+                            <button class="text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition" onclick="togglePhaseDetails('phase4')">
+                                Ver detalhes <i class="fas fa-chevron-down ml-1"></i>
+                            </button>
+                            <div id="phase4" class="hidden mt-4 space-y-10">
+                                <!-- Imagem principal da montagem do circuito -->
+                                <div class="flex justify-center mb-6">
+                                    <img src="Imagem/Captura de ecrã 2025-07-04 104829.png" class="rounded-xl shadow-lg w-1/2 md:w-1/3 object-contain" alt="Montagem do circuito eletrónico">
+                                </div>
+                                <!-- Sub-fase 4.1 -->
+                                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 shadow flex flex-col md:flex-row gap-6 items-center">
+                                    <img src="Imagem/Captura de ecrã 2025-07-04 103813.png" alt="Ligação dos servos" class="rounded shadow w-full md:w-1/3 max-w-xs object-contain">
+                                    <div>
+                                        <h4 class="text-lg font-semibold mb-2 text-blue-600 dark:text-blue-400">4.1 - Ligação dos Servos Motores ao Arduino</h4>
+                                        <p class="text-justify text-gray-700 dark:text-gray-200">
+                                            Nesta etapa, os servos motores foram conectados às portas digitais do Arduino, garantindo o correto funcionamento individual de cada motor antes da integração completa.
+                                        </p>
+                                    </div>
+                                </div>
+                                <!-- Sub-fase 4.2 -->
+                                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 shadow flex flex-col md:flex-row gap-6 items-center">
+                                    <img src="Imagem/Captura de ecrã 2025-07-04 103937.png" alt="Teste dos servos" class="rounded shadow w-full md:w-1/3 max-w-xs object-contain">
+                                    <div>
+                                        <h4 class="text-lg font-semibold mb-2 text-blue-600 dark:text-blue-400">4.2 - Teste do Funcionamento dos Servos</h4>
+                                        <p class="text-justify text-gray-700 dark:text-gray-200">
+                                            Após a ligação, foi realizado um teste de funcionamento dos servos utilizando um código simples no Arduino para verificar movimentos básicos e identificar possíveis falhas.
+                                        </p>
+                                    </div>
+                                </div>
+                                <!-- Sub-fase 4.3 -->
+                                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 shadow flex flex-col md:flex-row gap-6 items-center">
+                                    <img src="Imagem/Captura de ecrã 2025-07-04 104207.png" alt="Integração Leap Motion" class="rounded shadow w-full md:w-1/3 max-w-xs object-contain">
+                                    <div>
+                                        <h4 class="text-lg font-semibold mb-2 text-blue-600 dark:text-blue-400">4.3 - Integração do Leap Motion</h4>
+                                        <p class="text-justify text-gray-700 dark:text-gray-200">
+                                            O Leap Motion foi conectado ao computador e integrado ao sistema, permitindo a captura dos movimentos das mãos para posterior envio ao Arduino.
+                                        </p>
+                                    </div>
+                                </div>
+                                <!-- Sub-fase 4.4 -->
+                                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 shadow flex flex-col md:flex-row gap-6 items-center">
+                                    <img src="Imagem/Captura de ecrã 2025-07-04 104328.png" alt="Montagem final do circuito" class="rounded shadow w-full md:w-1/3 max-w-xs object-contain">
+                                    <div>
+                                        <h4 class="text-lg font-semibold mb-2 text-blue-600 dark:text-blue-400">4.4 - Montagem Final do Circuito</h4>
+                                        <p class="text-justify text-gray-700 dark:text-gray-200">
+                                            Todos os componentes foram conectados conforme o diagrama, realizando a montagem final do circuito e testes de integração para garantir o funcionamento do sistema completo.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+            
+
+    </section>
+
+    <!-- Results Section -->
+    <section id="results" class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Resultados Obtidos</h2>
+            
+            
+            <!-- Evaluation Results -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-6 text-center">Autoavaliação (Seção 4.4)</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-4">Lounie Costa</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Conhecimento Técnico</span>
+                                        <span class="font-bold">19.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div class="bg-blue-500 h-2.5 rounded-full" style="width: 90%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Contribuição</span>
+                                        <span class="font-bold">19.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div class="bg-blue-500 h-2.5 rounded-full" style="width: 90%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Cumprimento de Prazos</span>
+                                        <span class="font-bold">18.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div class="bg-blue-500 h-2.5 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-4">Mário Moniz</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Conhecimento Técnico</span>
+                                        <span class="font-bold">19.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div class="bg-blue-500 h-2.5 rounded-full" style="width: 90%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Contribuição</span>
+                                        <span class="font-bold">18.0</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div class="bg-blue-500 h-2.5 rounded-full" style="width: 80%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Cumprimento de Prazos</span>
+                                        <span class="font-bold">18.5</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        <div class="bg-blue-500 h-2.5 rounded-full" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
+                        <p class="text-center font-medium">Nota Final do Projeto: <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">18.5</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Section -->
+    <section id="code" class="py-20 bg-white dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12">Código Fonte</h2>
+            
+            <div class="flex justify-center mb-8">
+                <div class="inline-flex rounded-md shadow-sm">
+                    <button data-code-tab="processing" class="code-tab-btn px-6 py-3 rounded-l-lg font-medium bg-blue-500 text-white">Processing</button>
+                    <button data-code-tab="arduino" class="code-tab-btn px-6 py-3 font-medium bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">Arduino</button>
+                </div>
+            </div>
+            
+            <!-- Processing Code -->
+            <div id="processing" class="code-tab-content active">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div class="px-4 py-2 bg-gray-900 flex justify-between items-center">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span class="text-sm text-gray-400">LeapMotion_Controller.pde</span>
+                    </div>
+                    <pre class="p-4 overflow-x-auto"><code class="language-java">import com.leapmotion.leap.*;
+import processing.serial.*;
+
+Controller leap;
+Serial myPort;
+
+void setup() {
+  size(800, 600);
+  leap = new Controller();
+  
+  // Configura comunicação serial com Arduino
+  String portName = Serial.list()[0];
+  myPort = new Serial(this, portName, 9600);
+  
+  println("Leap Motion Controller inicializado");
+}
+
+void draw() {
+  background(0);
+  Frame frame = leap.frame();
+  Hand hand = frame.hands().get(0);
+  
+  if (hand.isValid()) {
+    // Captura dados da mão
+    Vector palmPos = hand.palmPosition();
+    Vector normal = hand.palmNormal();
+    Vector direction = hand.direction();
+    
+    // Mapeia posições para servos
+    int baseAngle = (int) map(palmPos.getX(), -200, 200, 0, 180);
+    int shoulderAngle = (int) map(palmPos.getY(), 50, 400, 180, 0);
+    int elbowAngle = (int) map(palmPos.getZ(), -200, 200, 0, 180);
+    
+    // Envia dados para Arduino
+    String data = baseAngle + "," + shoulderAngle + "," + elbowAngle + "\n";
+    myPort.write(data);
+    
+    // Exibe feedback visual
+    drawHandData(palmPos, normal, direction);
+  }
+}
+
+void drawHandData(Vector pos, Vector normal, Vector dir) {
+  // Implementação da visualização
+  // ...
+}</code></pre>
+                </div>
+            </div>
+            
+            <!-- Arduino Code -->
+            <div id="arduino" class="code-tab-content">
+                <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div class="px-4 py-2 bg-gray-900 flex justify-between items-center">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span class="text-sm text-gray-400">Robotic_Arm_Controller.ino</span>
+                    </div>
+                    <pre class="p-4 overflow-x-auto"><code class="language-c">#include &lt;Servo.h&gt;
+
+Servo baseServo;
+Servo shoulderServo;
+Servo elbowServo;
+
+int basePin = 9;
+int shoulderPin = 10;
+int elbowPin = 11;
+
+void setup() {
+  Serial.begin(9600);
+  
+  baseServo.attach(basePin);
+  shoulderServo.attach(shoulderPin);
+  elbowServo.attach(elbowPin);
+  
+  // Posição inicial
+  baseServo.write(90);
+  shoulderServo.write(90);
+  elbowServo.write(90);
+  
+  delay(1000);
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    String data = Serial.readStringUntil('\n');
+    
+    // Processa dados recebidos
+    int baseAngle = getValue(data, ',', 0).toInt();
+    int shoulderAngle = getValue(data, ',', 1).toInt();
+    int elbowAngle = getValue(data, ',', 2).toInt();
+    
+    // Move servos
+    baseServo.write(constrain(baseAngle, 0, 180));
+    shoulderServo.write(constrain(shoulderAngle, 0, 180));
+    elbowServo.write(constrain(elbowAngle, 0, 180));
+  }
+}
+
+String getValue(String data, char separator, int index) {
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length() - 1;
+  
+  for (int i = 0; i <= maxIndex && found <= index; i++) {
+    if (data.charAt(i) == separator || i == maxIndex) {
+      found++;
+      strIndex[0] = strIndex[1] + 1;
+      strIndex[1] = (i == maxIndex) ? i+1 : i;
+    }
+  }
+  
+  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}</code></pre>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+                <a href="#" class="inline-flex items-center px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 transition transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-download mr-2"></i> Baixar Projeto Completo
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-center items-center gap-16 text-center">
+                <!-- Agradecimentos -->
+                <div class="md:w-1/2 flex flex-col items-center">
+                    <h3 class="text-xl font-bold mb-4">Agradecimentos</h3>
+                    <p class="mb-4 max-w-md">
+                        À Escola Europeia de Ensino Profissional pelo apoio e orientação durante o desenvolvimento deste projeto.
+                    </p>
+                    <img src="Imagem/logo-wide.png" alt="Logo Escola Europeia" class="h-10 mx-auto">
+                </div>
+                <!-- Contatos -->
+                <div class="md:w-1/2 flex flex-col items-center">
+                    <h3 class="text-xl font-bold mb-4">Contatos</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center justify-center">
+                            <i class="fas fa-user mr-2"></i>
+                            <span>Lounie Costa Nº 7907</span>
+                        </li>
+                        <li class="flex items-center justify-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span>Lonicosta64@gmail.com</span>
+                        </li>
+                        <li class="flex items-center justify-center">
+                            <i class="fas fa-user mr-2"></i>
+                            <span>Mário Moniz Nº 7921</span>
+                        </li>
+                        <li class="flex items-center justify-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span>mariomoniz.007@gmail.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                <p>&copy; 2023 Braço Robótico - Prova de Aptidão Profissional. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-90 p-0">
+        <div class="relative max-w-4xl w-full flex items-center justify-center">
+            <button id="close-modal" class="absolute -top-10 right-0 text-white text-3xl hover:text-gray-300">&times;</button>
+            <img id="modal-image" src="" alt="" class="w-full max-h-screen object-contain mx-auto">
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-blue-500 text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-all duration-300">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Dark Mode Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        
+        // Mobile Menu Toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Tab Switching
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                
+                // Update active tab button
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('bg-blue-500', 'text-white');
+                    btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'hover:bg-gray-300', 'dark:hover:bg-gray-600');
+                });
+                button.classList.add('bg-blue-500', 'text-white');
+                button.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'hover:bg-gray-300', 'dark:hover:bg-gray-600');
+                
+                // Update active tab content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Code Tab Switching
+        const codeTabButtons = document.querySelectorAll('.code-tab-btn');
+        const codeTabContents = document.querySelectorAll('.code-tab-content');
+        
+        codeTabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-code-tab');
+                
+                // Update active tab button
+                codeTabButtons.forEach(btn => {
+                    btn.classList.remove('bg-blue-500', 'text-white');
+                    btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'hover:bg-gray-300', 'dark:hover:bg-gray-600');
+                });
+                button.classList.add('bg-blue-500', 'text-white');
+                button.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'hover:bg-gray-300', 'dark:hover:bg-gray-600');
+                
+                // Update active tab content
+                codeTabContents.forEach(content => {
+                    content.classList.remove('active');
+                    content.style.display = 'none';
+                });
+                const activeContent = document.getElementById(tabId);
+                if (activeContent) {
+                    activeContent.classList.add('active');
+                    activeContent.style.display = 'block';
+                }
+            });
+        });
+        
+        // Timeline Phase Details Toggle
+        function togglePhaseDetails(id) {
+            const element = document.getElementById(id);
+            element.classList.toggle('hidden');
+        }
+        
+        // Image Modal
+        function openImageModal(src) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-image');
+            
+            modalImg.src = src;
+            modalImg.alt = 'Imagem ampliada';
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('image-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+        
+        // Before/After Comparison Slider
+        const comparison = document.querySelector('.comparison');
+        const slider = document.querySelector('.comparison-slider');
+        let isDragging = false;
+
+        if (comparison && slider) {
+            slider.addEventListener('mousedown', () => {
+                isDragging = true;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const containerRect = comparison.parentElement.getBoundingClientRect();
+                let x = e.clientX - containerRect.left;
+
+                // Constrain to container
+                x = Math.max(0, Math.min(x, containerRect.width));
+
+                const percent = (x / containerRect.width) * 100;
+                comparison.style.width = `${percent}%`;
+                slider.style.left = `${percent}%`;
+            });
+        }
+        // Back to Top Button
+        const backToTopButton = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+            });
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+        
+
+        
+        // 3D Model Viewer
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('model-container');
+            
+            // Basic Three.js setup
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            // Simple placeholder geometry (replace with actual model)
+            const loader = new THREE.GLTFLoader();
+            loader.load('3d/Epic Bojo-Inari.glb', function(gltf) {
+                const model = gltf.scene;
+                model.scale.set(15, 15, 15); // Ajuste o tamanho se necessário
+                scene.add(model);
+            }, undefined, function(error) {
+                console.error('Erro ao carregar modelo 3D:', error);
+            });
+
+            camera.position.z = 5;
+            
+            // Orbit controls
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        });
+    </script>
+</body>
+</html>
