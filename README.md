@@ -1,82 +1,82 @@
-Projeto: pap-ten.vercel.app/PAP.html
+Project: pap-ten.vercel.app/PAP.html
 
-Descrição
+Description
 
-Este projeto consiste em uma página web estática (ou semântica) hospedada em Vercel
- que faz parte de um site maior no nicho de mindfulness voltado às dificuldades da era digital.
-Ele serve como parte de:
+This project consists of a static (or semantic) web page hosted on Vercel
 
-exibição de conteúdo curto ou landing page
+which is part of a larger website in the mindfulness niche related to the challenges of the digital age.
 
-integração com seu site principal (Next.js + TailwindCSS)
+Serves as part of:
 
-demonstração / protótipo rápido para publicação online com o mínimo de esforço operacional
+Short content display or landing page
 
-Objetivos
+Integration with your main website (Next.js + Tailwind CSS)
 
-Deploy rápido, totalmente online, sem necessidade de infraestrutura pesada
+Quick demo/prototype for online publication with minimal operational effort
 
-Manter o máximo de automação e mínimo de intervenção humana
+Objectives
 
-Suporte a futuras expansões (ex: links afiliados da Hotmart, captura de e-mails, blog, etc)
+Fast deployment, fully online, without the need for heavy infrastructure
 
-Código simples, limpo e fácil de manter
+Maintain maximum automation and minimum human intervention
 
-Tecnologias utilizadas
+Support for future expansions (e.g., Hotmart affiliate links, email capture, blog, etc.)
 
-HTML5 e CSS3 (ou framework mínimo)
+Simple, clean, and easy-to-maintain code
 
-Hospedagem: Vercel (deploy automático)
+Technologies used
 
-(Opcional) Framework front-end: Next.js + Tailwind CSS — caso o projeto seja expandido
+HTML5 and CSS3 (or minimal framework)
 
-Versionamento: Git / GitHub
+Hosting: Vercel (automatic deployment)
 
-Instalação & execução local
+(Optional) Front-end framework: Next.js + Tailwind CSS — if the project is expanded
 
-Clone este repositório:
+Version: Git/GitHub
 
-git clone https://github.com/SEU_USUARIO/NOME-DO_REPOSITORIO.git
-cd NOME-DO_REPOSITORIO
+Local installation and execution
 
+Clone this repository:
 
-(Se estiver usando npm/Node): Instale dependências (caso existam)
+git clone https://github.com/YOUR_USERNAME/REPOSITORY-NAME.git
+cd REPOSITORY-NAME
+
+(If using npm/Node): Install dependencies (if any)
 
 npm install
 
-
-Execute localmente:
+Run locally:
 
 npm run dev
 
+Or simply open PAP.html in your browser for static viewing.
 
-Ou simplesmente abra o PAP.html no navegador para visualização estática.
+Deployment: just connect the repository to Vercel and push — deployment will be automatic.
 
-Deploy: basta conectar o repositório ao Vercel e pushar — o deploy será automático.
+Project Structure
 
-Estrutura do projeto
-/  
-├─ PAP.html            ← página principal  
-├─ assets/             ← imagens, estilos, scripts  
-├─ README.md           ← este arquivo  
-└─ …                   ← outros arquivos conforme expansão futura  
+/
+├─ PAP.html ← main page
+├─ assets/ ← images, styles, scripts
+├─ README.md ← this file
+└─ … ← other files as needed
 
-Como contribuir
+How to contribute
 
-Fique à vontade para abrir issues ou pull requests para melhorias de layout, acessibilidade, performance ou funcionalidade.
+Feel free to open issues or pull requests for layout, accessibility, performance, or functionality improvements.
 
-Siga o estilo de código existente (indentação, nomenclatura, comentários).
+Follow the existing code style (indentation, naming conventions, comments).
 
-Teste localmente antes de submeter alterações.
+Test locally before submitting changes.
 
-Futuras melhorias
+Future improvements
 
-Transformar a página em componente React/Next.js para integração total com o site principal
+Transform the page into a React/Next.js component for full integration with the main website
 
-Adicionar sistema de captura de e-mail para newsletter (já previsto no site maior)
+Add email capture system for newsletter (already planned for the larger website)
 
-Adicionar modo escuro, responsividade aprimorada, animações suaves
+Dark mode, improved responsiveness, smooth animations
 
-Incluir links afiliados da Hotmart e sistema de métricas para acompanhamento de conversão
+Include Hotmart affiliate links and a metrics system for conversion tracking
 
-Otimização SEO e performance (ex: Lighthouse)
+SEO and performance optimization (e.g., Lighthouse)
